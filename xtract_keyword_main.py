@@ -8,7 +8,7 @@ class BadFreetextTypeException(Exception):
     """Throw this when we can't process a file. Means the input is bad. """
 
 
-def extract_topic(type_arg, target_path):
+def extract_keyword(type_arg, target_path):
 
     if type_arg == 'subtext':
         # Add document as string (for partial file).
@@ -24,14 +24,14 @@ def extract_topic(type_arg, target_path):
 
     elif type_arg == 'directory':
         # Add directory full of documents represented as files.
-        keywords = directory_to_keywords([target_path])
+        keywords = directory_to_keywords(target_path)
 
     else:
         raise BadFreetextTypeException("Bad format for freetext topic extractor. ")
 
     ex_freetext = {"type": type_arg, "keywords": {}}
     for item in keywords:
-        if len(item[0])>20:
+        if len(item[0]) > 20:
             ex_freetext = None
             break
         ex_freetext["keywords"][item[0]] = str(item[1])
@@ -50,10 +50,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     t0 = time.time()
-    meta = {"topic": extract_topic(args.type, args.path)}
+    meta = {"keyword": extract_keyword(args.type, args.path)}
     print(meta)
     t1 = time.time()
     print(t1 - t0)
+
+
 
 
 
