@@ -1,12 +1,9 @@
 FROM python:3.6
 
-MAINTAINER Ryan Wong
+COPY xtract_keyword_main.py stop-words-en.txt words_dictionary.json /
 
-# Copy files
-COPY stop-words-en.txt corpus.py preprocessing.py vectorizers.py doc_vectors.py pdf_to_text.py xtract_keyword_main.py /
+RUN pip install nltk PyPDF2 rake_nltk
+RUN pip install git+https://github.com/Parsl/parsl
+RUN pip install git+https://github.com/DLHub-Argonne/home_run
 
-# Install dependencies
-RUN pip install nltk numpy pdfminer.six chardet git+https://github.com/Parsl/parsl git+https://github.com/DLHub-Argonne/home_run
-RUN python -m nltk.downloader punkt
-
-#ENTRYPOINT ["python", "xtract_keyword_main.py"]
+#ENTRYPOINT ["python", "xtract_keyword_rake_main.py"]
