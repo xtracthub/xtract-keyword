@@ -1,4 +1,3 @@
-import os
 import re
 import time
 import json
@@ -40,6 +39,7 @@ def pdf_to_text(filepath):
         return text
 
 
+# TODO: Find a smarter way to filter out junk words that slip through the english word check
 def extract_keyword(file_path, top_n=20):
     """Extracts keywords from a file.
 
@@ -52,7 +52,8 @@ def extract_keyword(file_path, top_n=20):
     """
     tokens = []
     stop_words = ['\n']
-    with open(os.getcwd() + '/stop-words-en.txt', 'r') as f:
+
+    with open('stop-words-en.txt', 'r') as f:
         stop_words += [x.strip() for x in f.readlines()]
     with open('words_dictionary.json', 'r') as words_file:
         dict_of_words = json.load(words_file)
@@ -68,12 +69,16 @@ def extract_keyword(file_path, top_n=20):
             if not(word.lower() in dict_of_words.keys()):
                 tokens.remove(word)
         except:
-            tokens.remove(word)
+            pass
     tokens = ' '.join(map(str, tokens))
 
     r = Rake(stopwords=stop_words)
     r.extract_keywords_from_text(tokens)
     word_degrees = sorted(r.get_word_degrees().items(), key=lambda item: item[1], reverse=True)
+
+    for word_tuple in word_degrees[:]:
+        if len(word_tuple[0]) <= 2:
+            word_degrees.remove(word_tuple)
 
     metadata = {"keywords": {}}
     metadata["keywords"].update(word_degrees[:top_n])
@@ -85,12 +90,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', help='Filepath to extract keywords from',
                         required=True, type=str)
+    parser.add_argument('--top_words', help='Number of words to return',
+                        default=10)
 
     args = parser.parse_args()
 
     t0 = time.time()
-    meta = extract_keyword(args.path)
-    print(meta)
+    meta = extract_keyword(args.path, args.top_words)
     t1 = time.time()
+    meta.update({"extract time": (t1 - t0)})
     print(t1 - t0)
-
+    print(meta)
