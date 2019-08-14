@@ -77,7 +77,7 @@ def extract_keyword(file_path, top_n=20):
     word_degrees = sorted(r.get_word_degrees().items(), key=lambda item: item[1], reverse=True)
 
     for word_tuple in word_degrees[:]:
-        if len(word_tuple[0]) <= 2:
+        if len(word_tuple[0]) <= 4:
             word_degrees.remove(word_tuple)
 
     metadata = {"keywords": {}}

@@ -1,0 +1,3 @@
+nltk
+PyPDF2
+rake-nltk
