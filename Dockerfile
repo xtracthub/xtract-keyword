@@ -6,4 +6,4 @@ RUN pip install -U nltk
 RUN pip install -r requirements.txt
 RUN pip install git+https://github.com/Parsl/parsl git+https://github.com/DLHub-Argonne/home_run
 
-#ENTRYPOINT ["python", "xtract_keyword_rake_main.py"]
+#ENTRYPOINT ["python", "xtract_keyword_main.py"]

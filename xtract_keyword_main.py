@@ -40,16 +40,18 @@ def pdf_to_text(filepath):
 
 
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
-def extract_keyword(file_path, top_n=20):
+def extract_keyword(file_path, text_string=None, top_n=20):
     """Extracts keywords from a file.
 
     Parameters:
     file_path (str): File path of file to extract keywords from.
+    text_string (str): String of text to extract keywords from.
     top_n (int): Number of keywords to return.
 
     Return:
     metadata (dict): Dictionary containing top_n words and their scores.
     """
+    t0 = time.time()
     tokens = []
     stop_words = ['\n']
 
@@ -58,7 +60,9 @@ def extract_keyword(file_path, top_n=20):
     with open('words_dictionary.json', 'r') as words_file:
         dict_of_words = json.load(words_file)
 
-    if file_path.endswith('.pdf'):
+    if text_string is not None:
+        docs = text_string
+    elif file_path.endswith('.pdf'):
         docs = pdf_to_text(file_path)
     else:
         docs = read_files(file_path)
@@ -82,6 +86,7 @@ def extract_keyword(file_path, top_n=20):
 
     metadata = {"keywords": {}}
     metadata["keywords"].update(word_degrees[:top_n])
+    metadata.update({"extract time": time.time() - t0})
 
     return metadata
 
@@ -89,15 +94,14 @@ def extract_keyword(file_path, top_n=20):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', help='Filepath to extract keywords from',
-                        required=True, type=str)
+                        required=False, type=str)
+    parser.add_argument('--text_string', help='Filepath to extract keywords from',
+                        default=None, type=str)
     parser.add_argument('--top_words', help='Number of words to return',
                         default=10)
 
     args = parser.parse_args()
 
-    t0 = time.time()
-    meta = extract_keyword(args.path, args.top_words)
-    t1 = time.time()
-    meta.update({"extract time": (t1 - t0)})
-    print(t1 - t0)
+
+    meta = extract_keyword(args.path, args.text_string, args.top_words)
     print(meta)
