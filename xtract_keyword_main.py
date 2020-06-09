@@ -55,9 +55,9 @@ def extract_keyword(file_path, text_string=None, top_n=20):
     tokens = []
     stop_words = ['\n']
 
-    with open('stop-words-en.txt', 'r') as f:
+    with open('/stop-words-en.txt', 'r') as f:
         stop_words += [x.strip() for x in f.readlines()]
-    with open('words_dictionary.json', 'r') as words_file:
+    with open('/words_dictionary.json', 'r') as words_file:
         dict_of_words = json.load(words_file)
 
     if text_string is not None:
