@@ -40,7 +40,7 @@ def pdf_to_text(filepath):
 
 
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
-def extract_keyword(file_path, text_string=None, top_n=20):
+def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
     """Extracts keywords from a file.
 
     Parameters:
@@ -62,7 +62,7 @@ def extract_keyword(file_path, text_string=None, top_n=20):
 
     if text_string is not None:
         docs = text_string
-    elif file_path.endswith('.pdf'):
+    elif pdf:
         docs = pdf_to_text(file_path)
     else:
         docs = read_files(file_path)
