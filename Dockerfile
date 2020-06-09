@@ -6,4 +6,5 @@ RUN pip install -U nltk
 RUN pip install -r requirements.txt
 RUN pip install git+https://github.com/Parsl/parsl git+https://github.com/DLHub-Argonne/home_run
 
-#ENTRYPOINT ["python", "xtract_keyword_main.py"]
+RUN pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+ENV container_version=0
