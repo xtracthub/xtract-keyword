@@ -5,7 +5,7 @@ import nltk
 import PyPDF2
 import argparse
 from rake_nltk import Rake
-
+# import tabula
 
 def read_files(file):
     """Reads a file and returns a string of contents.
@@ -31,12 +31,14 @@ def pdf_to_text(filepath):
     with open(filepath, 'rb') as pdfFileObj:
         pdf_reader = PyPDF2.PdfFileReader(pdfFileObj)
         num_pages = pdf_reader.numPages
+        # return num_pages
         while count < num_pages:
             pageObj = pdf_reader.getPage(count)
             count += 1
             text += pageObj.extractText()
-
-        return text
+    if text == "":
+        # Try another method here...
+        return None
 
 
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
@@ -66,6 +68,9 @@ def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
         docs = pdf_to_text(file_path)
     else:
         docs = read_files(file_path)
+
+    if docs == None:
+        return {'keywords': None, 'message': "Unable to extract text"}
 
     tokens.extend([x for x in nltk.word_tokenize(docs.lower()) if re.match("[a-zA-Z]{2,}", x)])
     for word in tokens[:]:
@@ -102,6 +107,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-
-    meta = extract_keyword(args.path, args.text_string, args.top_words)
+    #meta = pdf_to_text(args.path)
+    meta = extract_keyword(args.path, args.text_string, args.top_words, True)
     print(meta)
