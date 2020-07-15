@@ -31,15 +31,16 @@ def pdf_to_text(filepath):
     with open(filepath, 'rb') as pdfFileObj:
         pdf_reader = PyPDF2.PdfFileReader(pdfFileObj)
         num_pages = pdf_reader.numPages
-        # return num_pages
+
         while count < num_pages:
             pageObj = pdf_reader.getPage(count)
             count += 1
             text += pageObj.extractText()
+
     if text == "":
         # Try another method here...
         return None
-
+    return text
 
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
 def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
@@ -104,9 +105,10 @@ if __name__ == "__main__":
                         default=None, type=str)
     parser.add_argument('--top_words', help='Number of words to return',
                         default=10)
+    parser.add_argument('--pdf', help='Bool is pdf', default=True)
 
     args = parser.parse_args()
 
     #meta = pdf_to_text(args.path)
-    meta = extract_keyword(args.path, args.text_string, args.top_words, True)
+    meta = extract_keyword(args.path, args.text_string, args.top_words, args.pdf)
     print(meta)
