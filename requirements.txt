@@ -1,3 +1,7 @@
 nltk
 PyPDF2
 rake-nltk
+xlrd
+pillow
+markdown
+python-pptx
