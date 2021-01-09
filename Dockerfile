@@ -4,6 +4,7 @@ COPY stop-words-en.txt words_dictionary.json requirements.txt /
 
 RUN pip install -U nltk
 RUN pip install -r requirements.txt
+RUN python -m nltk.downloader all
 RUN pip install git+https://github.com/DLHub-Argonne/home_run
 
 RUN pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
