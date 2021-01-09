@@ -1,6 +1,7 @@
 import re
 import time
 import json
+import decimal
 import nltk
 import PyPDF2
 import argparse
@@ -62,16 +63,22 @@ def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
         stop_words += [x.strip() for x in f.readlines()]
     with open('/words_dictionary.json', 'r') as words_file:
         dict_of_words = json.load(words_file)
+    
+    try: 
+        if text_string is not None:
+            docs = text_string
+        elif pdf:
+            docs = pdf_to_text(file_path)
+        else:
+            docs = read_files(file_path)
 
-    if text_string is not None:
-        docs = text_string
-    elif pdf:
-        docs = pdf_to_text(file_path)
-    else:
-        docs = read_files(file_path)
-
-    if docs == None:
-        return {'keywords': None, 'message': "Unable to extract text"}
+        if docs == None:
+            return {'keywords': None, 'message': "Unable to extract text"}
+    
+    except decimal.InvalidOperation as e:
+        return {'keywords': None, 'message': f"Decimal Error: {e}"}
+    except ValueError as e: 
+        return {'keywords': None, 'message': f"ValueError: {e}"}
 
     tokens.extend([x for x in nltk.word_tokenize(docs.lower()) if re.match("[a-zA-Z]{2,}", x)])
     for word in tokens[:]:
