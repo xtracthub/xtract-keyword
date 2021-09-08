@@ -1,6 +1,4 @@
-from funcx_xtract_keyword import extract_keyword
 import re
-import os
 import time
 import json
 import decimal
@@ -8,23 +6,7 @@ import nltk
 import PyPDF2
 import argparse
 from rake_nltk import Rake
-
-# TODO: Create a system for xtract_keyword_main to take in arguments
-# without explicity sending them in... perhaps a JSON config file?
-
-def execute_extractor(filename):
-    """
-    Test version 1... let's see if this works. Should be straightforward.
-    
-    """
-    t0 = time.time()
-    if not filename:
-        return None
-    metadata = extract_keyword()
-    t1 = time.time()
-    metadata.update({"extract time": (t1 - t0)})
-    return metadata
-
+# import tabula
 
 def read_files(file):
     """Reads a file and returns a string of contents.
@@ -62,8 +44,7 @@ def pdf_to_text(filepath):
     return text
 
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
-# def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
-def extract_keyword(file_path, text_string=None, top_n=20):
+def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
     """Extracts keywords from a file.
 
     Parameters:
@@ -77,10 +58,7 @@ def extract_keyword(file_path, text_string=None, top_n=20):
     t0 = time.time()
     tokens = []
     stop_words = ['\n']
-    pdf = False
 
-    if file_path.endswith('.pdf'):
-        pdf = True
     with open('stop-words-en.txt', 'r') as f:
         stop_words += [x.strip() for x in f.readlines()]
     with open('words_dictionary.json', 'r') as words_file:
@@ -127,24 +105,17 @@ def extract_keyword(file_path, text_string=None, top_n=20):
 
 
 if __name__ == "__main__":
-    """Takes file paths from command line and returns metadata.
-
-    Arguments:
-    --path (File path): File path of text file.
-
-    Returns:
-    meta (insert type here): Metadata of text file.
-    t1 - t0 (float): Time it took to retrieve text metadata.
-    """
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', help='Filepath to extract keywords from',
-                        required=True, type=str)
+                        required=False, type=str)
     parser.add_argument('--text_string', help='Filepath to extract keywords from',
                         default=None, type=str)
     parser.add_argument('--top_words', help='Number of words to return',
                         default=10)
+    parser.add_argument('--pdf', help='Bool is pdf', default=True)
 
     args = parser.parse_args()
-    meta = extract_keyword(args.path, args.text_string, args.top_words)
+
+    #meta = pdf_to_text(args.path)
+    meta = extract_keyword(args.path, args.text_string, args.top_words, args.pdf)
     print(meta)
