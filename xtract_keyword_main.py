@@ -20,7 +20,7 @@ def execute_extractor(filename):
     t0 = time.time()
     if not filename:
         return None
-    metadata = extract_keyword()
+    metadata = extract_keyword(file_path=filename)
     t1 = time.time()
     metadata.update({"extract time": (t1 - t0)})
     return metadata
@@ -75,15 +75,16 @@ def extract_keyword(file_path, text_string=None, top_n=20):
     metadata (dict): Dictionary containing top_n words and their scores.
     """
     t0 = time.time()
+    dir = os.path.dirname(__file__)
     tokens = []
     stop_words = ['\n']
     pdf = False
 
     if file_path.endswith('.pdf'):
         pdf = True
-    with open('stop-words-en.txt', 'r') as f:
+    with open(f'{dir}/stop-words-en.txt', 'r') as f:
         stop_words += [x.strip() for x in f.readlines()]
-    with open('words_dictionary.json', 'r') as words_file:
+    with open(f'{dir}/words_dictionary.json', 'r') as words_file:
         dict_of_words = json.load(words_file)
     
     try: 
