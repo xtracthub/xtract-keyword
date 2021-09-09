@@ -1,0 +1,6 @@
+Hello! This is a quick text just to make sure that the code is working without
+bugs. The other one, called 'freetext', was way too long for me to run on my
+laptop.
+
+At this point, I have written a new function called execute_extractor and am
+about to test it on my funcx endpoint.
