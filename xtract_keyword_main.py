@@ -13,10 +13,6 @@ from rake_nltk import Rake
 # without explicity sending them in... perhaps a JSON config file?
 
 def execute_extractor(filename):
-    """
-    Test version 1... let's see if this works. Should be straightforward.
-    
-    """
     t0 = time.time()
     if not filename:
         return None
