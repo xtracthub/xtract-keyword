@@ -1,3 +1,5 @@
 nltk
 rake-nltk
 PyPDF2
+funcx
+funcx-endpoint

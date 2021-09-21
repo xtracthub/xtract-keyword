@@ -1,0 +1,18 @@
+Bootstrap: docker
+From: python:3.6
+
+%files 
+stop-words-en.txt /stop-words-en.txt 
+words_dictionary.json /words_dictionary.json 
+requirements.txt /requirements.txt
+xtract_keyword_main.py /xtract_keyword_main.py 
+funcx_xtract_keyword.py /funcx_xtract_keyword.py
+
+
+%post
+pip install -U nltk
+pip install -r requirements.txt
+# pip install parsl==0.9.0
+pip install xtract-sdk==0.0.7a2
+
+/usr/local/bin/python -m nltk.downloader punkt

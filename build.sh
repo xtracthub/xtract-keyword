@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME='xtract_keyword_image'
+IMAGE_NAME='xtract-keyword'
 
 docker rmi -f $IMAGE_NAME
 
