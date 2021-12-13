@@ -2,4 +2,6 @@ nltk
 rake-nltk
 PyPDF2
 funcx
+globus_sdk==2.0.1
 funcx-endpoint
+python-docx

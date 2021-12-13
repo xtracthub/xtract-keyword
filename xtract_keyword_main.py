@@ -7,7 +7,10 @@ import decimal
 import nltk
 import PyPDF2
 import argparse
+import docx
 from rake_nltk import Rake
+
+
 
 # TODO: Create a system for xtract_keyword_main to take in arguments
 # without explicity sending them in... perhaps a JSON config file?
@@ -61,9 +64,18 @@ def pdf_to_text(filepath):
         return None
     return text
 
+
+def getText(filename):
+    doc = docx.Document(filename)
+    fullText = []
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+    return '\n'.join(fullText)
+
+
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
 # def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
-def extract_keyword(file_path, text_string=None, top_n=20):
+def extract_keyword(file_path, text_string=None, top_n=50):
     """Extracts keywords from a file.
 
     Parameters:
@@ -80,8 +92,11 @@ def extract_keyword(file_path, text_string=None, top_n=20):
     stop_words = ['\n']
     pdf = False
 
+    is_docx = False
     if file_path.endswith('.pdf'):
         pdf = True
+    if file_path.endswith('.docx'):
+        is_docx = True
     with open(f'{dir}/stop-words-en.txt', 'r') as f:
         stop_words += [x.strip() for x in f.readlines()]
     with open(f'{dir}/words_dictionary.json', 'r') as words_file:
@@ -92,6 +107,8 @@ def extract_keyword(file_path, text_string=None, top_n=20):
             docs = text_string
         elif pdf:
             docs = pdf_to_text(file_path)
+        elif is_docx:
+            docs = getText(file_path)
         else:
             docs = read_files(file_path)
 

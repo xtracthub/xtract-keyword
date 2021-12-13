@@ -12,11 +12,10 @@ RUN pip install -r requirements.txt
 # RUN mv /punkt tokenizers
 RUN python -m nltk.downloader punkt
 
-
-
 # RUN pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
-ENV container_version=1
+ENV container_version=1.0
 
 # RUN pip install parsl==0.9.0
 RUN pip install xtract-sdk==0.0.7a2
+RUN pip uninstall globus_sdk -y && pip install globus_sdk==2.0.1
 COPY xtract_keyword_main.py funcx_xtract_keyword.py / 
