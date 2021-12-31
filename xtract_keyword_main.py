@@ -73,9 +73,86 @@ def getText(filename):
     return '\n'.join(fullText)
 
 
+class ExtractorRunner:
+    def __init__(self, docs, dict_of_words, stop_words, timeout, retry_kb):
+        self.docs = docs
+        self.word_degrees = None
+        
+        self.dict_of_words = dict_of_words
+        self.stop_words = stop_words
+
+        import multiprocessing as mp
+        print("A")
+        pool = mp.Pool(processes=1)
+        result = pool.apply_async(self.token_proc_thread, args=(), kwds={})
+
+        must_retry = False
+        try:
+            print("B")
+            val = result.get(timeout=timeout)
+            self.word_degrees = val
+        except mp.TimeoutError:
+            print(f"Threadpool timed out after {timeout} seconds! Trimming size to {retry_kb}")
+            pool.terminate()
+            must_retry = True
+        else: 
+            pool.close()
+            pool.join()
+            print("SUCCESS ON FIRST TRY!")
+        
+        print("C")
+        if must_retry: 
+            print("D?")
+            try:
+                bytes_to_read = retry_kb * 1024
+                if len(self.docs) > retry_kb:
+                    self.docs = self.docs[0:1024]
+                    pool = mp.Pool(processes=1)
+                    result = pool.apply_async(self.token_proc_thread, args=(), kwds={})
+                
+                    val = result.get(timeout=timeout)
+            except mp.TimeoutError:
+                print(f"Threadpool timed out second time on {retry_kb}. It is likely these are not freetext data...")
+                pool.terminate()
+            else:
+                pool.close()
+                pool.join()
+                self.word_degrees = val
+                print("SUCCESS ON SECOND TRY!")
+
+        print(f"Great job! Word degrees: {self.word_degrees}")
+            
+
+
+    def token_proc_thread(self): 
+        tokens = []
+
+        print("YO")
+        time.sleep(15)
+        tokens.extend([x for x in nltk.word_tokenize(self.docs.lower()) if re.match("[a-zA-Z]{2,}", x)])
+        for word in tokens[:]:
+            try:
+                if not(word.lower() in self.dict_of_words.keys()):
+                    tokens.remove(word)
+            except:
+                pass
+        tokens = ' '.join(map(str, tokens))
+
+        r = Rake(stopwords=self.stop_words)
+        r.extract_keywords_from_text(tokens)
+        # word_degrees = []
+        word_degrees = sorted(r.get_word_degrees().items(), key=lambda item: item[1], reverse=True)
+        print(word_degrees)
+        for word_tuple in word_degrees[:]:
+            if len(word_tuple[0]) <= 4:
+                word_degrees.remove(word_tuple)
+        
+        return word_degrees
+    
+
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
 # def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
-def extract_keyword(file_path, text_string=None, top_n=50):
+def extract_keyword(file_path, text_string=None, top_n=50, timeout=10, retry_kb=4):
     """Extracts keywords from a file.
 
     Parameters:
@@ -87,8 +164,9 @@ def extract_keyword(file_path, text_string=None, top_n=50):
     metadata (dict): Dictionary containing top_n words and their scores.
     """
     t0 = time.time()
-    dir = os.path.dirname(__file__)
-    tokens = []
+    package_dir = os.path.dirname(__file__) + "/"
+    package_dir = ""  # TODO: TYLER
+
     stop_words = ['\n']
     pdf = False
 
@@ -97,9 +175,9 @@ def extract_keyword(file_path, text_string=None, top_n=50):
         pdf = True
     if file_path.endswith('.docx'):
         is_docx = True
-    with open(f'{dir}/stop-words-en.txt', 'r') as f:
+    with open(f'{package_dir}stop-words-en.txt', 'r') as f:
         stop_words += [x.strip() for x in f.readlines()]
-    with open(f'{dir}/words_dictionary.json', 'r') as words_file:
+    with open(f'{package_dir}words_dictionary.json', 'r') as words_file:
         dict_of_words = json.load(words_file)
     
     try: 
@@ -119,26 +197,11 @@ def extract_keyword(file_path, text_string=None, top_n=50):
         return {'keywords': None, 'message': f"Decimal Error: {e}"}
     except ValueError as e: 
         return {'keywords': None, 'message': f"ValueError: {e}"}
-
-    tokens.extend([x for x in nltk.word_tokenize(docs.lower()) if re.match("[a-zA-Z]{2,}", x)])
-    for word in tokens[:]:
-        try:
-            if not(word.lower() in dict_of_words.keys()):
-                tokens.remove(word)
-        except:
-            pass
-    tokens = ' '.join(map(str, tokens))
-
-    r = Rake(stopwords=stop_words)
-    r.extract_keywords_from_text(tokens)
-    word_degrees = sorted(r.get_word_degrees().items(), key=lambda item: item[1], reverse=True)
-
-    for word_tuple in word_degrees[:]:
-        if len(word_tuple[0]) <= 4:
-            word_degrees.remove(word_tuple)
-
+    
+    xtr_runner = ExtractorRunner(docs=docs, dict_of_words=dict_of_words, stop_words=stop_words, timeout=timeout, retry_kb=retry_kb)
+    
     metadata = {"keywords": {}}
-    metadata["keywords"].update(word_degrees[:top_n])
+    metadata["keywords"].update(xtr_runner.word_degrees[:top_n])
     metadata.update({"extract time": time.time() - t0})
 
     return metadata
