@@ -82,13 +82,13 @@ class ExtractorRunner:
         self.stop_words = stop_words
 
         import multiprocessing as mp
-        print("A")
+        # print("A")
         pool = mp.Pool(processes=1)
         result = pool.apply_async(self.token_proc_thread, args=(), kwds={})
 
         must_retry = False
         try:
-            print("B")
+            # print("B")
             val = result.get(timeout=timeout)
             self.word_degrees = val
         except mp.TimeoutError:
@@ -98,11 +98,11 @@ class ExtractorRunner:
         else: 
             pool.close()
             pool.join()
-            print("SUCCESS ON FIRST TRY!")
+            # print("SUCCESS ON FIRST TRY!")
         
-        print("C")
+        # print("C")
         if must_retry: 
-            print("D?")
+            # print("D?")
             try:
                 bytes_to_read = retry_kb * 1024
                 if len(self.docs) > retry_kb:
@@ -118,7 +118,7 @@ class ExtractorRunner:
                 pool.close()
                 pool.join()
                 self.word_degrees = val
-                print("SUCCESS ON SECOND TRY!")
+                # print("SUCCESS ON SECOND TRY!")
 
         print(f"Great job! Word degrees: {self.word_degrees}")
             
@@ -127,8 +127,7 @@ class ExtractorRunner:
     def token_proc_thread(self): 
         tokens = []
 
-        print("YO")
-        time.sleep(15)
+        # print("YO")
         tokens.extend([x for x in nltk.word_tokenize(self.docs.lower()) if re.match("[a-zA-Z]{2,}", x)])
         for word in tokens[:]:
             try:
@@ -152,7 +151,7 @@ class ExtractorRunner:
 
 # TODO: Find a smarter way to filter out junk words that slip through the english word check
 # def extract_keyword(file_path, text_string=None, top_n=20, pdf=False):
-def extract_keyword(file_path, text_string=None, top_n=50, timeout=10, retry_kb=4):
+def extract_keyword(file_path, text_string=None, top_n=50, timeout=180, retry_kb=10):
     """Extracts keywords from a file.
 
     Parameters:
@@ -165,7 +164,7 @@ def extract_keyword(file_path, text_string=None, top_n=50, timeout=10, retry_kb=
     """
     t0 = time.time()
     package_dir = os.path.dirname(__file__) + "/"
-    package_dir = ""  # TODO: TYLER
+    # package_dir = ""  # TODO: TYLER
 
     stop_words = ['\n']
     pdf = False
@@ -201,7 +200,12 @@ def extract_keyword(file_path, text_string=None, top_n=50, timeout=10, retry_kb=
     xtr_runner = ExtractorRunner(docs=docs, dict_of_words=dict_of_words, stop_words=stop_words, timeout=timeout, retry_kb=retry_kb)
     
     metadata = {"keywords": {}}
-    metadata["keywords"].update(xtr_runner.word_degrees[:top_n])
+    
+    word_degrees = xtr_runner.word_degrees
+    if len(xtr_runner.word_degrees) >= top_n:
+        metadata["keywords"].update(xtr_runner.word_degrees[:top_n])
+    else:
+        metadata["keywords"].update(xtr_runner.word_degrees)
     metadata.update({"extract time": time.time() - t0})
 
     return metadata
